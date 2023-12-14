@@ -1,0 +1,34 @@
+Other table libraries like dashtables support rowspan and colspan semantics. I'd like to see this coming to rich as well.
+This is how it's done using dashtables:
+
+from dashtable import data2rst
+
+table = [
+        ["Header 1", "Header 2", "Header3", "Header 4"],
+        ["row 1", "column 2", "column 3", "column 4"],
+        ["row 2", "Cells span columns.", "", ""],
+        ["row 3", "Cells\nspan rows.", "- Cells\n- contain\n- blocks", ""],
+        ["row 4", "", "", ""]
+    ]
+
+# [Row, Column] pairs of merged cells -- zero-based indexing
+span0 = [[2, 1], [2, 2], [2, 3]]
+span1 = [[3, 1], [4, 1]]
+span2 = [[3, 2], [3, 3], [4, 2], [4, 3]]
+
+my_spans = [span0, span1, span2]
+
+print(data2rst(table, spans=my_spans, use_headers=True))
+Which outputs the following:
+
++----------+------------+----------+----------+
+| Header 1 | Header 2   | Header3  | Header 4 |
++==========+============+==========+==========+
+| row 1    | column 2   | column 3 | column 4 |
++----------+------------+----------+----------+
+| row 2    | Cells span columns.              |
++----------+------------+---------------------+
+| row 3    | Cells      | - Cells             |
++----------+ span rows. | - contain           |
+| row 4    |            | - blocks            |
++----------+------------+---------------------+

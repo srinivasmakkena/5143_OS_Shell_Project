@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+
+        #header {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .clock-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .clock {
+            font-size: 36px;
+            color: red;
+            margin-right: 10px;
+        }
+
+        .block-container {
+            display: grid;
+            grid-template-areas: 
+                'newQueue readyQueue runningQueue exitQueue'
+                'newQueue ioQueue waitingQueue exitQueue';
+            grid-gap: 20px;
+            justify-content: center;
+        }
+
+        .block {
+            width: 300px;
+            height: 280px;
+            text-align: center;
+            border: 1px solid #000;
+            position: relative;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #newQueue { grid-area: newQueue; }
+        #readyQueue { grid-area: readyQueue; }
+        #runningQueue { grid-area: runningQueue; }
+        #exitQueue { grid-area: exitQueue; }
+        #ioQueue { grid-area: ioQueue; }
+        #waitingQueue { grid-area: waitingQueue; }
+
+        .queue-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #ddd;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #4caf50;
+            width: 0;
+        }
+
+        .process-id {
+            font-size: 15px;
+            margin: 5px;
+            overflow-y: auto;
+            max-height: 280px;
+        }
+
+      
+    </style>
+</head>
+<body>
+    <div id="header">System Information</div>
+
+    <div class="clock-container">
+        <div class="clock">
+            <!-- Replace this with your actual clock implementation -->
+            12:34:56
+        </div>
+        <img src="https://i.makeagif.com/media/6-29-2016/qb1mPr.gif" alt="Clock Icon" style="width: 80px; height: 40px;">
+    </div>
+
+    <div class="block-container">
+        <div class="block" id="newQueue">
+            <div class="queue-name">New Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+        </div>
+        
+        <div class="block" id="readyQueue">
+            <div class="queue-name">Ready Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="block" id="runningQueue">
+            <div class="queue-name">Running Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+        </div>
+        <div class="block" id="exitQueue">
+            <div class="queue-name">Exit Queue</div>
+            <div class="process-id">
+                {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+           
+        </div>
+        <div class="block" id="ioQueue">
+            <div class="queue-name">IO Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+        </div>
+        <div class="block" id="waitingQueue">
+            <div class="queue-name">Waiting Queue</div>
+            <div class="process-id">Process ID: 006</div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const blocks = document.querySelectorAll(".block");
+            blocks.forEach(block => {
+                const progressBar = block.querySelector(".progress");
+                let progress = 0;
+                setInterval(() => {
+                    progress = (progress + 1) % 101;
+                    progressBar.style.width = `${progress}%`;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

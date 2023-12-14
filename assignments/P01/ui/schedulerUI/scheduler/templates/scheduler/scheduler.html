@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Scheduler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+
+        #header {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .clock-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .clock {
+            font-size: 36px;
+            color: red;
+            margin-right: 10px;
+        }
+
+        .block-container {
+            display: grid;
+            grid-template-areas: 
+                'newQueue readyQueue runningQueue exitQueue'
+                'newQueue ioQueue waitingQueue exitQueue';
+            grid-gap: 20px;
+            justify-content: center;
+        }
+
+        .block {
+            width: 300px;
+            height: 280px;
+            text-align: center;
+            border: 1px solid #000;
+            position: relative;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 10px;
+        }
+
+        #newQueue { grid-area: newQueue; }
+        #readyQueue { grid-area: readyQueue; }
+        #runningQueue { grid-area: runningQueue; }
+        #exitQueue { grid-area: exitQueue; }
+        #ioQueue { grid-area: ioQueue; }
+        #waitingQueue { grid-area: waitingQueue; }
+
+        .queue-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #ddd;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #4caf50;
+            width: 0;
+        }
+
+       
+        .process-id {
+            font-size: 15px;
+            margin: 5px;
+            overflow-y: auto;
+            max-height: 280px;
+            position: relative; /* Add this to make the progress bar position relative to the .process-id div */
+        }
+        #messagePane {
+            width: 700px;
+            background-color: #100e0e;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            max-height: 300px; /* Adjust the max height as needed */
+            color:white;
+            border-radius: 10px;
+        }
+        #graphContainer {
+            width: 700px;
+            height: 300px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-left: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+        .flex-container {
+            display: flex;
+            justify-content: space-between; /* Adjust as needed */
+            margin-top: 20px; /* Add margin between the block container and the flex container */
+        }
+        .options-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Adjust styles for the choosers and slider */
+        .option-box {
+            width: 400px; /* Adjust the width as needed */
+            box-sizing: border-box;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin :10px;
+        }
+
+        #imageViewer {
+            overflow-y: auto;
+            height: 600px;
+            border: 2px solid #ccc; /* Add this line to set the border */
+            padding: 10px; /* Optional: Add padding for better appearance */
+            border-radius: 10px; /* Optional: Add rounded corners */
+            width:  90%;
+            margin: 20px;
+        }
+
+    </style>
+    
+</head>
+<body>
+    <div id="header">System Moniter</div>
+    <div class="options-container">
+        <div class="option-box">
+            <label for="cpuType">CPU Scheduling Type:</label>
+            <select id="cpuType">
+                <option value="FCFS">FCFS</option>
+                <option value="RoundRobin">Round Robin</option>                
+                <option value="Priority">Priority Based</option>
+            </select>
+        </div>
+
+        <div class="option-box">
+            <label for="numCPUs">Number of CPUs:</label>
+            <select id="numCPUs">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="option-box">
+            <label for="numIODevices">Number of I/O Devices:</label>
+            <select id="numIODevices">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+    </div>
+    <div class="options-container">
+        
+        <div class="option-box">
+            <label for="speedSlider">Speed:</label>
+            <input type="range" id="speedSlider" min="1" max="50" value="5">
+        </div>
+        <div class="option-box">
+            <label for="roundRobinTime">Round Robin Time:</label>
+            <select id="roundRobinTime">
+                <option value="1">1ms</option>
+                <option value="2">2ms</option>
+                <option value="3">3ms</option>
+                <option value="4">4ms</option>
+                <option value="5">5ms</option>
+                <option value="6">6ms</option>
+                <option value="7">7ms</option>
+                <option value="8">8ms</option>
+                <option value="9">9ms</option>
+                <option value="10">10ms</option>
+            </select>
+        </div>
+        <div class="option-box">
+            <button class = "btn-secondary" id="getImageButton" style="overflow-y: auto;">Plot Summaries</button>
+        </div>
+    </div>
+     
+
+    <div class="clock-container">
+        <div class="clock">
+        </div>
+        <img src="https://i.makeagif.com/media/6-29-2016/qb1mPr.gif" alt="Clock Icon" style="width: 80px; height: 40px;">
+    </div>
+
+    <div class="block-container">
+        <div class="block" id="newQueue">
+            <div class="queue-name">New Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+        </div>
+        
+        <div class="block" id="readyQueue">
+            <div class="queue-name">Ready Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="block" id="runningQueue">
+            <div class="queue-name">Running Queue</div>
+            <div class="process-id"> {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="block" id="exitQueue">
+            <div class="queue-name">Exit Queue</div>
+            <div class="process-id">
+                {% for i in ''|center:13 %}
+                Process ID: {{ 0|stringformat:"03d" }}<br>
+            {% endfor %}
+            </div>
+           
+        </div>
+        <div class="block" id="ioQueue">
+            <div class="queue-name">IO Queue</div>
+            
+            <div class="process-id"> {% for i in ''|center:13 %}
+                
+                Process ID: {{ 0|stringformat:"04d" }}<br>
+                
+            {% endfor %}
+            </div>
+        </div>
+        <div class="block" id="waitingQueue">
+            <div class="queue-name">Waiting Queue</div>
+            <div class="process-id">Process ID: 006</div>
+            
+        </div>
+    </div>
+    <div class="flex-container">
+        <div id="messagePane">
+            
+        </div>
+
+        <div id="graphContainer">
+            <label for="graphContainer">Utilization plot</label>
+            <canvas id="ioCpuChart"></canvas>
+        </div>
+    </div>
+    <!-- Add these elements within the body tag -->
+    <br>
+    <div class="option-box"><b>Summary Plots</b></div>
+    <div id="imageViewer" style="overflow-y: auto;"></div>
+
+
+    <script>
+        // const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const ctx = document.getElementById('ioCpuChart').getContext('2d');
+        const ioCpuChart = new Chart(ctx, {
+    type: 'line', // Change the chart type to 'line'
+    data: {
+        labels: [],
+        datasets: [
+            {
+                label: 'CPU Utilization',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)', // Set the background color for the area
+                fill: 'origin', // Fill the area under the curve
+                data: [],
+                cubicInterpolationMode: 'monotone',
+            },
+            {
+                label: 'IO Utilization',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)', // Set the background color for the area
+                fill: 'origin', // Fill the area under the curve
+                data: [],
+                cubicInterpolationMode: 'monotone',
+            },
+                ],
+            },
+        });
+
+        function plotData(cpuUtilization,ioUtilization) {
+            const timestamp = ioCpuChart.data.labels.length; // Assuming sequential timestamps
+            const maxDataPoints = 30; // Maximum number of data points to display
+            if (timestamp > maxDataPoints - 1) {
+                ioCpuChart.data.labels.shift();
+                ioCpuChart.data.datasets[0].data.shift();
+                ioCpuChart.data.datasets[1].data.shift();
+            }
+            // Update chart data
+            ioCpuChart.data.labels.push(timestamp);
+            ioCpuChart.data.datasets[0].data.push(cpuUtilization);
+            ioCpuChart.data.datasets[1].data.push(ioUtilization);
+            ioCpuChart.update({ duration: 0 });
+        }
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/scheduler/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+                       
+            document.getElementById('newQueue').querySelector('.queue-name').textContent = "New Queue " + data.new_queue_count;
+            document.getElementById('readyQueue').querySelector('.queue-name').textContent = "Ready Queue " + data.ready_queue_count;
+            document.getElementById('runningQueue').querySelector('.queue-name').textContent = "Running Queue " + data.running_queue_count;
+            document.getElementById('exitQueue').querySelector('.queue-name').textContent = "Exit Queue " + data.exit_queue_count;
+            document.getElementById('ioQueue').querySelector('.queue-name').textContent = "IO Queue " + data.io_queue_count;
+            document.getElementById('waitingQueue').querySelector('.queue-name').textContent = "waiting Queue " + data.waiting_queue_count;
+            if (data.imageData) {
+                appendImages(data.imageData);
+            }
+            else{
+                updateProcessData(data.new_queue_elements, 'newQueue');
+                updateProcessData(data.ready_queue_elements, 'readyQueue');
+                updateProcessData(data.running_queue_elements, 'runningQueue');
+                updateProcessData(data.exit_queue_elements, 'exitQueue');
+                updateProcessData(data.io_queue_elements, 'ioQueue');
+                updateProcessData(data.waiting_queue_elements, 'waitingQueue');
+                const clockElement = document.querySelector('.clock');
+                clockElement.textContent = data.clock;
+                numcpus = document.getElementById("numCPUs").value;
+                numio = document.getElementById("numIODevices").value;
+                plotData(data.running_queue_count/numcpus * 100, data.io_queue_count/numio *100 )
+                data.messages.forEach(message=>
+                {
+                    addMessageToPane(message);
+                }) 
+            }
+        };
+            
+        const getImageButton = document.getElementById('getImageButton');
+        const imageViewer = document.getElementById('imageViewer');
+        getImageButton.addEventListener('click', () => {
+            // Send a request to the server to get images
+            chatSocket.send(JSON.stringify({
+                'getImageRequest': true,
+                }));
+            });
+        function updateProcessData(processList, blockId) {
+            const block = document.getElementById(blockId);
+            const processIdElement = block.querySelector('.process-id');
+
+            // Clear existing process data
+            processIdElement.innerHTML = '';
+
+            // Add new process data
+            processList.forEach(process => {
+                processIdElement.innerHTML += `Process ID: ${process}<br>`;
+                // Add any other process information as needed
+            });
+        }
+        function addMessageToPane(data) {
+            const messagePane = document.getElementById('messagePane');
+            const maxMessages = 100; 
+            data = data.replace(/\n/g, '<br>');
+
+            // Create a new div element for the message
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = JSON.stringify(data);
+
+            // Append the new message element
+            messagePane.appendChild(messageDiv);
+
+            // Remove older messages if the total number exceeds maxMessages
+            const messages = messagePane.getElementsByTagName('div');
+            while (messages.length > maxMessages) {
+                messagePane.removeChild(messages[0]);
+            }
+
+            // Always scroll to the bottom
+            messagePane.scrollTop = messagePane.scrollHeight;
+        }
+        document.getElementById("cpuType").addEventListener("change", function() {
+            const selectedCpuType = this.value;
+            chatSocket.send(JSON.stringify({
+                'cpuType': selectedCpuType
+            }));
+        });
+        // Function to append images to the image viewer
+        function appendImages(image) {
+            const imgElement = document.createElement('img');
+            imgElement.src = "data:image/png;base64," + image;
+            imgElement.style.width = '50%';
+            imgElement.style.marginBottom = '10px';
+            imageViewer.appendChild(imgElement);
+        }
+
+        document.getElementById("numCPUs").addEventListener("change", function() {
+            const selectedNumCPUs = this.value;
+            chatSocket.send(JSON.stringify({
+                'numCPUs': selectedNumCPUs
+            }));
+        });
+
+        document.getElementById("numIODevices").addEventListener("change", function() {
+            const selectedNumIODevices = this.value;
+            chatSocket.send(JSON.stringify({
+                'numIODevices': selectedNumIODevices
+            }));
+        });
+        
+        document.getElementById("roundRobinTime").addEventListener("change", function () {
+            const selectedRoundRobinTime = this.value;
+            chatSocket.send(JSON.stringify({
+                'roundRobinTime': selectedRoundRobinTime
+            }));
+        });
+
+        document.getElementById("speedSlider").addEventListener("input", function() {
+            // Send the slider value to the server
+            chatSocket.send(JSON.stringify({
+            'speed': this.value
+            }));
+        });
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+    </script>
+</body>
+</html>

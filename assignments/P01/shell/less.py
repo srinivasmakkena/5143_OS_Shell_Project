@@ -77,7 +77,8 @@ def less(command, shell_obj,output_dict,flag):
                 if exists:
                     if temp_dir.metadata["File Type"] != "Directory":
                         content += temp_dir.file.read().decode()
-    if flag:
+    if flag:    
+        
         curses.wrapper(pager, content)
     else:
         output_dict["output"] = content
